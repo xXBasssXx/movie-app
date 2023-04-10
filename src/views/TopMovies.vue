@@ -34,7 +34,7 @@
                 <h3 class="genre" v-text="selectedGenre"></h3>
             </el-card>
             <el-dialog v-model="showDialog" title="Movie Information">
-              <p>this is test</p>
+              <p>{{selectedMovie.overview}}</p>
             </el-dialog>
         </el-main>
       </el-container>
@@ -54,6 +54,7 @@
                 crimeMovies: [],
                 genres: [],
                 showDialog: false,
+                selectedMovie: null,
                 selectedGenreId: 28,
                 api_key: "86dbd4e4cda5e1699767a982ef7eaadf"
             }
@@ -140,6 +141,7 @@
                         });
             },
             movieDetails(movie) {
+              this.selectedMovie = movie;
               this.showDialog = true;
                 console.log("movie", movie)
             },
