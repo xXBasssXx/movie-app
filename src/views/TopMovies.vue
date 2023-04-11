@@ -27,7 +27,7 @@
         <el-main>
             <el-card class="top-rated-movies">
               <h3>Top Movies</h3>
-                <el-carousel :interval="222200" type="card" height="450px" autoplay>
+                <el-carousel :interval="222200" type="card" height="400px" autoplay>
                     <el-carousel-item v-for="movie in selectCarouselDisplay" :key="movie.id" @click="movieDetails(movie)">
                     <img :src="'https://image.tmdb.org/t/p/w500' + movie.poster_path" />
                     </el-carousel-item>
@@ -43,12 +43,14 @@
                 </div>
                 <div class="info-container">
                   <p style="font-weight: bold; color: black; font-size: 25px;margin-bottom:0px;text-decoration:underline">{{selectedMovie.title}}</p>
-                  <p class="movie-rating" style="margin-top:1px;">Movie Rating: {{selectedMovie.vote_average}}⭐</p>
+                  <p class="movie-rating" style="margin-top:1px;color:#67C23A;">Movie Rating: {{selectedMovie.vote_average.toFixed(2)}}⭐</p>
                   <span class="overview">{{selectedMovie.overview}}</span>
                   
                 </div>
-                <el-button type="success" plain round style="margin-top:15px;">Add Rating</el-button>
-                <el-button type="danger" plain round style="margin-top:15px;" @click="movieTrailer()">Play Trailer</el-button>
+                <div class="button-container">
+                  <el-button type="success" plain round style="margin-top:15px;">Add Rating</el-button>
+                  <el-button type="danger" plain round style="margin-top:15px;" @click="movieTrailer()">Play Trailer</el-button>
+                </div>
               </div>
             </el-dialog>
 
@@ -185,6 +187,12 @@
                 });
                 console.log("movie", this.selectedMovie);
             },
+            async addRating(movie) {
+              await axios.post(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${this.api_key}`)
+                .then(response => {
+                  console.log('post', response.data);
+                });
+            }
         },
     }
   </script>
@@ -209,7 +217,7 @@
     flex-wrap: wrap;
   }
   .el-carousel__item {
-    width: 630px;
+    width: 550px;
     height: 380px;
   }
   .el-carousel__item h3 {
@@ -228,7 +236,7 @@
     background-color: #d3dce6;
   }
   img {
-    width: 600px;
+    width: 520px;
     height: 350px;
     display: block;
     margin: 15px;
@@ -285,6 +293,21 @@
     display: block;
     margin-left: auto;
     margin-right: auto;
+  }
+  .button-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+    align-items: flex-end;
+  }
+
+  .button-container el-button {
+    margin-bottom: 5px;
+    
+  }
+
+  button {
+    width: 90px;
   }
   </style>
   
