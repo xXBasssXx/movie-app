@@ -26,15 +26,34 @@
         </el-header>
         <el-main>
             <el-card class="top-rated-movies">
-                <el-carousel :interval="2200" type="card" height="350px" autoplay>
+              <h3>Top Movies</h3>
+                <el-carousel :interval="222200" type="card" height="450px" autoplay>
                     <el-carousel-item v-for="movie in selectCarouselDisplay" :key="movie.id" @click="movieDetails(movie)">
                     <img :src="'https://image.tmdb.org/t/p/w500' + movie.poster_path" />
                     </el-carousel-item>
                 </el-carousel>
                 <h3 class="genre" v-text="selectedGenre"></h3>
             </el-card>
+            <h3 class="recommended">Recommended Movies</h3>
             <el-dialog v-model="showDialog" title="Movie Information">
-              <p>{{selectedMovie.overview}}</p>
+              <div class="image-container">
+                <div class="image-wrapper">
+                  <img class="image-info" :src="'https://image.tmdb.org/t/p/w500' + selectedMovie.poster_path" />
+                  
+                </div>
+                <div class="info-container">
+                  <p style="font-weight: bold; color: black; font-size: 25px;margin-bottom:0px;text-decoration:underline">{{selectedMovie.title}}</p>
+                  <p class="movie-rating" style="margin-top:1px;">Movie Rating: {{selectedMovie.vote_average}}⭐</p>
+                  <span class="overview">{{selectedMovie.overview}}</span>
+                  
+                </div>
+                <el-button type="success" plain round style="margin-top:15px;">Add Rating</el-button>
+                <el-button type="danger" plain round style="margin-top:15px;" @click="movieTrailer()">Play Trailer</el-button>
+              </div>
+            </el-dialog>
+
+            <el-dialog v-model="videoDialog" title="Movie Trailer">
+              <iframe width="560" height="315" :src="videoUrl" frameborder="0" allowfullscreen></iframe>
             </el-dialog>
         </el-main>
       </el-container>
@@ -43,6 +62,7 @@
 
   <script>
     import axios from 'axios';
+    import { ElNotification } from 'element-plus';
 
     export default {
         data() {
@@ -54,7 +74,10 @@
                 crimeMovies: [],
                 genres: [],
                 showDialog: false,
+                videoDialog: false,
                 selectedMovie: null,
+                videoUrl: "",
+                isVideo: false,
                 selectedGenreId: 28,
                 api_key: "86dbd4e4cda5e1699767a982ef7eaadf"
             }
@@ -101,35 +124,30 @@
                 await axios.get(`https://api.themoviedb.org/3/discover/movie?api_key=${this.api_key}&with_genres=28&sort_by=popularity.desc`)
                         .then(response => {
                             this.actionMovies = response.data.results.slice(0, 10);
-                            console.log("action", this.actionMovies);
                         });
             },
             async topAdventureMovie() {
               await axios.get(`https://api.themoviedb.org/3/discover/movie?api_key=${this.api_key}&with_genres=12&sort_by=popularity.desc`)
                         .then(response => {
                             this.adventureMovies = response.data.results.slice(0, 10);
-                            console.log("adventure", this.adventureMovies);
                         });
             },
             async topAnimeMovie() {
               await axios.get(`https://api.themoviedb.org/3/discover/movie?api_key=${this.api_key}&with_genres=16&sort_by=popularity.desc`)
                         .then(response => {
                           this.animeMovies = response.data.results.slice(0, 10);
-                          console.log("anime", this.animeMovies);
                         })
             },
             async topComedyMovie() {
               await axios.get(`https://api.themoviedb.org/3/discover/movie?api_key=${this.api_key}&with_genres=35&sort_by=popularity.desc`)
                         .then(response => {
                           this.comedyMovies = response.data.results.slice(0, 10);
-                          console.log("comedy", this.comedyMovies);
                         })
             },
             async topCrimeMovie() {
               await axios.get(`https://api.themoviedb.org/3/discover/movie?api_key=${this.api_key}&with_genres=80&sort_by=popularity.desc`)
                         .then(response => {
                           this.crimeMovies = response.data.results.slice(0, 10);
-                          console.log("crime", this.crimeMovies);
                         })
             },
             async getGenre() {
@@ -137,13 +155,35 @@
                         .then(response => {
                           const allGenres = response.data;
                           this.genres = allGenres.genres.slice(0, 5);
-                          console.log("genres", this.genres); 
                         });
             },
-            movieDetails(movie) {
-              this.selectedMovie = movie;
-              this.showDialog = true;
-                console.log("movie", movie)
+            openYoutube() {
+              this.videoUrl 
+            },
+            movieTrailer() {
+              if (!this.selectedMovie.videos || this.selectedMovie.videos.results.length === 0) {
+              ElNotification({
+                title: "Error",
+                message: "No Trailer found in this movie.",
+                type: "error",
+                duration: 1000,
+              });
+            }
+
+              const videoKey = this.selectedMovie.videos.results[0].key;
+              
+              this.videoUrl = `https://www.youtube.com/embed/${videoKey}`;
+              this.videoDialog = true;
+            },
+            async movieDetails(movie) {
+
+              await axios.get(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${this.api_key}&append_to_response=videos`)
+                .then(response => {
+                  console.log(response);
+                  this.selectedMovie = response.data;
+                  this.showDialog = true;
+                });
+                console.log("movie", this.selectedMovie);
             },
         },
     }
@@ -165,9 +205,12 @@
   }
   .el-menu-item {
     color: #ffffff;
+    align-content: center;
+    flex-wrap: wrap;
   }
   .el-carousel__item {
-    width: 560px;
+    width: 630px;
+    height: 380px;
   }
   .el-carousel__item h3 {
     color: #475669;
@@ -185,10 +228,10 @@
     background-color: #d3dce6;
   }
   img {
-    width: 500px;
+    width: 600px;
     height: 350px;
     display: block;
-    margin: 0 auto;
+    margin: 15px;
   }
 
   .left-items {
@@ -207,6 +250,41 @@
   .logo {
     width: 180px;
     height: 50px;
+  }
+  h3 {
+    color: white;
+  }
+  .recommended {
+    margin-left:80px;
+  }
+  .image-container {
+    display: flex;
+    align-items: flex-start;
+  }
+  
+  .image-wrapper {
+    margin-right: 1rem;
+  }
+  
+  .image-info {
+    width: 250px;
+    height: 250px;
+    margin-right: 0px;
+  }
+  .info-container {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .overview {
+    font-weight: normal;
+    text-align: justify;
+    flex: 1;
+  }
+  iframe {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
   }
   </style>
   
