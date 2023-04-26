@@ -35,6 +35,15 @@
                 <h3 class="genre" v-text="selectedGenre"></h3>
             </el-card>
             <h3 class="recommended">Recommended Movies</h3>
+            <el-row>
+              <el-col v-for="(recom) in recommendedMovies" :key="recom.id" :span="4" @click="movieDetails(recom)">
+                <el-card style="width: 100%; margin: 10px;">
+                  <div style="display: flex; justify-content: center; align-items: center; height: 300px;">
+                    <img style="max-width: 100%; max-height: 100%; cursor: pointer" :src="'https://image.tmdb.org/t/p/w500' + recom.poster_path" />
+                  </div>
+                </el-card>
+              </el-col>
+            </el-row>
             <el-dialog v-model="showDialog" title="Movie Information">
               <div class="image-container">
                 <div class="image-wrapper">
@@ -73,6 +82,7 @@
                 comedyMovies: [],
                 crimeMovies: [],
                 genres: [],
+                recommendedMovies: [],
                 showDialog: false,
                 videoDialog: false,
                 selectedMovie: null,
@@ -118,6 +128,7 @@
             this.topAnimeMovie();
             this.topComedyMovie();
             this.topCrimeMovie();
+            this.getRecommended();
         },
         methods: {
             async topActionMovie() {
@@ -156,6 +167,13 @@
                           const allGenres = response.data;
                           this.genres = allGenres.genres.slice(0, 5);
                         });
+            },
+            async getRecommended() {
+              await axios.get(`https://api.themoviedb.org/3/discover/movie?api_key=${this.api_key}&with_genres=${this.selectedGenreId}&sort_by=vote_average`)
+                        .then(response => {
+                          this.recommendedMovies = response.data.results.slice(0, 18);
+                          console.log("recommended",this.recommendedMovies)
+                        })
             },
             openYoutube() {
               this.videoUrl 
